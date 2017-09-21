@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <title>chat room</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body,html,#app{height: 100%;}
+      body {
+          background: black;
+      }
+      header {
+          padding: 25px;
+          font-size: 30px;
+          color:rgba(255,255,255,0.85);
+          text-shadow: 4px 2px 15px rgba(0, 0, 0, 0.62);
+      }
+      input{
+          padding: 10px;
+          border: 1px solid #66ccff;
+          margin: 10px;
+          width: 50%;
+          box-shadow: 0px 0px 20px 2px rgba(0, 0, 0, 0.53);
+      }
+      button {
+        background: rgb(130, 149, 255); border: none; padding: 10px;
+        margin: 10px;
+        width: 50%;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0px 0px 20px 2px rgba(0, 0, 0, 0.53);
+      }
+      #app{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items:center ;
+      }
+      body { font: 13px Helvetica, Arial;}
+      #image {
+        position: absolute;
+        left: 0;
+        top: 0;
+        background-size: cover;  
+        background-position : center;
+        opacity: 0.6;
+        width: 100%;
+        height: 100%;
+        z-index: -10;
+        filter: blur(4px);
+     /*   filter: url(./svg/blur.svg#blur);  */
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div id="app" >
+      <div :style="{backgroundImage: 'url('+ imgURL + ')'}" id="image"></div>
+      <header>聊天室</header>
+      <div style="width:100%;text-align:center;margin:auto 0;transform:translateY(-80%)">
+            <input type="number" placeholder="输入房间号" v-model.number="room" @keyup.enter="go"></input>
+            <button type="button" @click="go">进入</button>  
+        </div>
+    </div> 
+    <script src="https://cdn.bootcss.com/vue/2.4.2/vue.js"></script>
+    <script src="https://cdn.bootcss.com/vue-resource/1.3.4/vue-resource.js"></script>
+    <script>
+      var app = new Vue({
+        el: '#app',
+        data:{
+            room: '',
+            imgURL: ''
+        },
+        methods:{
+            go:function () {
+                if(this.room == '') {
+                    return
+                }
+                window.location.href=window.location.href + this.room;
+            }
+        },
+        created:function() {
+            var num = Math.floor(Math.random()*8)
+            /* axios.get('http://localhost:5000/bingPicture')
+            .then( function(res) {
+              var ret = res.data.images[num].url.replace('1920x1080','640x360')
+              console.log('imgurl', ret)
+              this.imgURL = ret
+            }.bind(this)) */
+            //ie用不了promise
+            this.$http.get('http://api.summerscar.com/bingPicture')
+              .then(function(res){
+                var ret = res.body.images[num].url.replace('1920x1080','640x360')
+              console.log('imgurl', ret)
+              this.imgURL = ret
+              }.bind(this), function(response){
+                
+              });
+        }
+      })        
+    </script>
+   
+  </body>
+</html>

@@ -1,0 +1,123 @@
+
+<!doctype html>
+<html>
+  <head>
+    <title>chat room</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
+    <link rel="stylesheet" href="https://fonts.css.network/css?family=Roboto:300,400,500,700,400italic">
+    <link rel="stylesheet" href="https://fonts.css.network/icon?family=Material+Icons">
+    <link rel="stylesheet" href="./muse-ui.css">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      [v-cloak] {display: none;}
+      body,html{height: 100%;background-color: #eeeeee}
+      body { font: 13px Helvetica, Arial;}
+      #app {height: 100%}
+      #sned {position: fixed;bottom: 0;width: 100%;text-align: center;}
+      input { width: 90%;border: 1px solid black; padding: 10px;  margin-right: .5%;}
+      button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages {height: calc( 100% - 112px ); overflow: auto;}
+      #messages li { padding: 5px 10px; }
+      .system{text-align: center; font-size: 12px;color: #afafaf} 
+      header{
+        font-size: 20px
+      }
+      .user{color: #afafaf;padding: 5px 12px;} 
+      .content{padding: 7px 15px;background-color:#ffffff;display: inline-block;border-radius: 5px;margin-left:10px;}
+      .mycontent{text-align: right;}
+      .mycontentcolor{padding: 7px 15px;background-color:#7E57C2;display: inline-block;border-radius: 5px;margin-right:10px;color:#ffffff}
+    </style>
+  </head>
+  <body>
+    <div id="app" v-cloak>
+      <header>
+          <mu-appbar title="Title">
+              <mu-icon-button icon="keyboard_arrow_left" @click="back" slot="left"></mu-icon-button>
+              <span style="line-height: 48px;display:inline-block">房间 {{room}}</span>
+          </mu-appbar>
+        
+        
+      </header>
+      <div id="messages">
+        <ul>
+          <li v-for="(item, index) in messageArr" :class="{system: item.user==='系统'}" :ref="'li'+index">
+            <div v-if="item.user==='系统'">{{item.user}}: {{item.content}}</div>
+            <div v-else="">
+              <div :class="[{user:true},{mycontent:item.user===userName}]">
+                  {{item.user}}:
+              </div>
+              <div :class="{mycontent:item.user===userName}">
+                <span :class="[{content:item.user!==userName},{mycontentcolor:item.user===userName}]">
+                  {{item.content}}
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div id="sned">
+        <mu-text-field hint-text="输入信息" v-model.trim="message" v-on:keyup.enter.prevent="send"></mu-text-field>
+        <mu-raised-button label="发送" class="demo-raised-button"  @click="send" primary></mu-raised-button>
+      </div>
+        <mu-dialog :open="dialog" title="输入昵称" @close="close">
+          <mu-text-field  hint-text="请输入昵称"  v-model.trim="tempName" @keyup.enter="close" label-float></mu-text-field>
+          <mu-flat-button label="确定"  primary @click="close" slot="actions"></mu-flat-button>
+        </mu-dialog>
+    </div> 
+    <script src="https://cdn.bootcss.com/socket.io/2.0.3/socket.io.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.4.2/vue.js"></script>
+    <script src="./muse-ui.js"></script>
+    <script>
+      var app = new Vue({
+        el: '#app',
+        data: {
+          message: '',
+          messageArr: [],
+          room:'',
+          dialog: false,
+          userName:'',
+          tempName:''
+        },
+        computed: {
+        },
+        methods: {
+          open: function() {
+            this.dialog = true
+          },
+          close: function () {
+            if (this.tempName === '') return
+            this.dialog = false
+            this.userName = this.tempName
+            this.socket = io();
+            this.socket.on('connect', function() {
+              this.socket.emit('join',this.userName);
+            }.bind(this))
+            this.socket.on('message', function(msg) {
+            this.messageArr.push(msg)
+            this.$nextTick(function () {
+              this.$refs['li'+ (this.messageArr.length-1)][0].scrollIntoView();
+            }.bind(this))
+          }.bind(this));  
+          },
+          back:function() {
+            console.log(window.location)
+            window.location.href = window.location.origin
+          },
+          send: function () {
+            if (this.message === '') return
+            console.log(this.message)
+            this.socket.emit('message', this.message);
+            this.message = ''
+          }
+        },
+        mounted:function () {
+          this.room =  window.location.pathname.substr(1)
+          if (!this.userName) {
+            this.dialog = true
+          }
+        }
+      })        
+    </script>
+   
+  </body>
+</html>

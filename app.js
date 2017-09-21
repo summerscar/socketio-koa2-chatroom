@@ -68,7 +68,6 @@ io.on('connection', (ctx, data) => {
         }
         io.broadcast( 'message', {user:'系统',content:`欢迎 ${username} 进入房间 ${room} 当前在线人数：${io.connections.size}`} );
         io.to(room).emit( 'message', {user:'系统',content:`欢迎 ${username} 进入了该房间 该房间人数${ roomObj[room].length}`});
-        console.log('连接人数', io.connections.size, roomObj)
     }); 
 });
 
@@ -90,7 +89,6 @@ io.on('message', (ctx, data) => {
     }
     logger.info('receive a message ' + data);
     io.to(rooms[0]).emit( 'message', {user:userObj[ctx.socket.id],content:data});
-    //ctx.socket.broadcast.to(rooms[0]).emit( 'message', data );
 
 
 
